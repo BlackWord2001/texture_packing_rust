@@ -18,7 +18,7 @@ enum PackMode {
 #[command(name = "texpack")]
 #[command(about = "轻量级 CLI 贴图打包工具")]
 struct Args {
-    #[arg(short = 'R')]
+    #[arg(short, long)]
     mode: PackMode,
     args: Vec<String>,
 }
@@ -70,6 +70,11 @@ fn pack_channels(inputs: &[ChannelInput], mode: &PackMode) -> Result<RgbaImage, 
 
     // 创建输出画布
     let mut output = RgbaImage::new(width, height);
+
+    // 把 alpha 通道填充为不透明255
+    for pixel in output.pixels_mut() {
+        pixel.0[3] = 255;
+    }
 
     // 逐通道填充
     let channel_count = match mode {
