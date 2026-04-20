@@ -283,7 +283,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "texture_packing_rust"
+name = "texpack"
 version = "0.1.0"
 dependencies = [
  "clap",
