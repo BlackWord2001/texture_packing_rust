@@ -13,6 +13,8 @@ impl TexpackApp {
 
 impl eframe::App for TexpackApp {
     fn ui(&mut self, ctx: &mut egui::Ui, frame: &mut eframe::Frame) {
+        ui::render_top_panel(ctx, self);
+        ui::render_left_panel(ctx, self);
         ui::render_central_panel(ctx, self);
     }
 }

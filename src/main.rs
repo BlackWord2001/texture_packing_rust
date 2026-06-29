@@ -1,8 +1,6 @@
 mod app;
 mod ui;
 
-use eframe::egui;
-
 fn main() {
     let native_options = eframe::NativeOptions::default();
     eframe::run_native(
