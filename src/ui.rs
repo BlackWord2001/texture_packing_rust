@@ -1,7 +1,9 @@
+// UI 布局，功能实现请放其他文件
 use eframe::egui;
 
 use crate::app::TexpackApp;
 
+// 中央面板
 pub fn render_central_panel(ui: &mut egui::Ui, app: &mut TexpackApp) {
     egui::CentralPanel::default().show(ui, |ui| {
         ui.heading("central panel");
@@ -10,6 +12,7 @@ pub fn render_central_panel(ui: &mut egui::Ui, app: &mut TexpackApp) {
     });
 }
 
+// 顶部面板
 pub fn render_top_panel(ui: &mut egui::Ui, app: &mut TexpackApp) {
     egui::Panel::top("my top panel").show(ui, |ui| {
         egui::MenuBar::new().ui(ui, |ui| {
