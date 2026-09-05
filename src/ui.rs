@@ -12,29 +12,45 @@ pub fn render_central_panel(ui: &mut egui::Ui, app: &mut TexpackApp) {
 
 pub fn render_top_panel(ui: &mut egui::Ui, app: &mut TexpackApp) {
     egui::Panel::top("my top panel").show(ui, |ui| {
-        
         egui::MenuBar::new().ui(ui, |ui| {
             ui.menu_button("File", |ui| {
                 if ui.button("Open").clicked() {
+                    #[cfg(debug_assertions)]
                     println!("Open clicked");
                 }
     
                 if ui.button("Save").clicked() {
+                    #[cfg(debug_assertions)]
                     println!("Save clicked");
                 }
     
                 if ui.button("Exit").clicked() {
+                    #[cfg(debug_assertions)]
                     println!("Exit clicked");
                 }
             });
 
+
             ui.menu_button("Preferences", |ui| {
-                if ui.button("Theme").clicked() {
-                    println!("select theme");
-                }
+                ui.menu_button("Theme", |ui| {
+                    if ui.button("Auto").clicked() {
+                        #[cfg(debug_assertions)]
+                        println!("Auto Theme");
+                    }
+                    
+                    if ui.button("Light Theme").clicked() {
+                        #[cfg(debug_assertions)]
+                        println!("select light theme");
+                    }
+
+                    if ui.button("Dark Theme").clicked() {
+                        #[cfg(debug_assertions)]
+                        println!("select drak theme");
+                    }
+                });
+                
             });
         });
-
     });
 }
 
