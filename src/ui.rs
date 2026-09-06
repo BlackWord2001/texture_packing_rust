@@ -6,9 +6,7 @@ use crate::app::TexpackApp;
 // 中央面板
 pub fn render_central_panel(ui: &mut egui::Ui, app: &mut TexpackApp) {
     egui::CentralPanel::default().show(ui, |ui| {
-        ui.heading("central panel");
-
-        
+        ui.heading("texture packing");
     });
 }
 
@@ -30,6 +28,8 @@ pub fn render_top_panel(ui: &mut egui::Ui, app: &mut TexpackApp) {
                 if ui.button("Exit").clicked() {
                     #[cfg(debug_assertions)]
                     println!("Exit clicked");
+
+                    ui.ctx().send_viewport_cmd(egui::ViewportCommand::Close);
                 }
             });
 
