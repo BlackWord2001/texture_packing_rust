@@ -1,10 +1,10 @@
 // UI 布局，功能实现请放其他文件
 use eframe::egui;
 
-use crate::app::{ChannelInput, TexpackApp};
+use crate::app::{AppPage, ChannelInput, TexToolApp};
 
 // 绘制中央面板。app 使用可变引用，因为卡片中的控件会修改各通道状态。
-pub fn render_central_panel(ui: &mut egui::Ui, app: &mut TexpackApp) {
+pub fn render_central_panel(ui: &mut egui::Ui, app: &mut TexToolApp) {
     // CentralPanel 会使用顶部等其他面板绘制后剩下的区域。
     egui::CentralPanel::default().show(ui, |ui| {
         // 闭包中的四次函数调用按从左到右的顺序排列。
@@ -18,11 +18,11 @@ pub fn render_central_panel(ui: &mut egui::Ui, app: &mut TexpackApp) {
     });
 }
 
-// 绘制窗口顶部菜单。当前还不读取应用状态，所以参数名使用 _app。
-pub fn render_top_panel(ui: &mut egui::Ui, _app: &mut TexpackApp) {
+pub fn render_top_panel(ui: &mut egui::Ui, app: &mut TexToolApp) {
     // 字符串 "my top panel" 是面板的持久 ID，需要在界面中保持唯一和稳定。
-    egui::Panel::top("my top panel").show(ui, |ui| {
+    egui::Panel::top("top panel").show(ui, |ui| {
         egui::MenuBar::new().ui(ui, |ui| {
+            // 文件菜单
             ui.menu_button("File", |ui| {
                 // clicked() 只会在按钮本帧被点击时返回 true。
                 if ui.button("Open").clicked() {
@@ -45,6 +45,7 @@ pub fn render_top_panel(ui: &mut egui::Ui, _app: &mut TexpackApp) {
                 }
             });
 
+            // 偏好设置
             ui.menu_button("Preferences", |ui| {
                 ui.menu_button("Theme", |ui| {
                     if ui.button("Auto").clicked() {
@@ -63,12 +64,18 @@ pub fn render_top_panel(ui: &mut egui::Ui, _app: &mut TexpackApp) {
                     }
                 });
             });
+
+            // 分隔线
+            ui.separator();
+
+            // 页面切换
+            ui.selectable_value(&mut app.current_page, AppPage::Packing, "Packing");
+            ui.selectable_value(&mut app.current_page, AppPage::Splitting, "Splitting");
+            ui.selectable_value(&mut app.current_page, AppPage::Sdf, "SDF");
         });
     });
 }
 
-// 绘制一张可复用的通道卡片。
-// channel_name 是借用的字符串切片，例如 "R"；channel 是对应通道状态的可变引用。
 fn render_channel_card(ui: &mut egui::Ui, channel_name: &str, channel: &mut ChannelInput) {
     // group 为内部控件添加卡片式背景、边框和内边距。
     ui.group(|ui| {
@@ -91,6 +98,9 @@ fn render_channel_card(ui: &mut egui::Ui, channel_name: &str, channel: &mut Chan
 
             // 暂时显示文件名占位文字，之后可以从 channel.path 中提取真实文件名。
             ui.label("file name");
+
+
+            ui.separator();
 
             // 这个闭包只让两个按钮在卡片内部横向排列。
             ui.horizontal(|ui| {
