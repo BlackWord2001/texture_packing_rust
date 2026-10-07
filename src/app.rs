@@ -13,6 +13,8 @@ pub struct TexToolApp {
     pub blue: ChannelInput,
     pub alpha: ChannelInput,
     pub current_page: AppPage,
+    pub output_format: String,
+    pub output_path: String,
 }
 
 impl TexToolApp {

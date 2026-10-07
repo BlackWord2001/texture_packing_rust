@@ -7,14 +7,62 @@ use crate::app::{AppPage, ChannelInput, TexToolApp};
 pub fn render_central_panel(ui: &mut egui::Ui, app: &mut TexToolApp) {
     // CentralPanel 会使用顶部等其他面板绘制后剩下的区域。
     egui::CentralPanel::default().show(ui, |ui| {
-        // 闭包中的四次函数调用按从左到右的顺序排列。
-        ui.horizontal(|ui| {
-            // &mut app.red 只把 red 字段可变借给函数，而不是转移字段所有权。
-            render_channel_card(ui, "R", &mut app.red);
-            render_channel_card(ui, "G", &mut app.green);
-            render_channel_card(ui, "B", &mut app.blue);
-            render_channel_card(ui, "A", &mut app.alpha);
-        });
+        match &app.current_page {
+            AppPage::Packing => {
+                ui.horizontal(|ui| {
+                    // &mut app.red 只把 red 字段可变借给函数，而不是转移字段所有权。
+                    render_channel_card(ui, "R", &mut app.red);
+                    render_channel_card(ui, "G", &mut app.green);
+                    render_channel_card(ui, "B", &mut app.blue);
+                    render_channel_card(ui, "A", &mut app.alpha);
+                });
+
+                ui.separator();
+
+                ui.columns(2, |columns| {
+                    columns[0].group(|ui| {
+                        ui.heading("Preview");
+                        ui.label("Output texture preview");
+                    });
+                    columns[1].group(|ui| {
+                        ui.heading("Export");
+                        ui.label("Output settings");
+
+                        egui::ComboBox::from_id_salt("output_format")
+                            .selected_text("PNG")
+                            .show_ui(ui, |ui| {
+                                ui.selectable_value(
+                                    &mut app.output_format,
+                                    "PNG".to_string(),
+                                    "PNG",
+                                );
+                            });
+
+                        ui.label("Output path");
+
+                        ui.horizontal(|ui| {
+                            ui.add_sized(
+                                [180.0, 24.0],
+                                egui::TextEdit::singleline(&mut app.output_path),
+                            );
+                            let _ = ui.button("...");
+                        });
+
+                        ui.separator();
+
+                        if ui.button("Export").clicked() {
+                            // 之后实现真正的图片导出
+                        }
+                    });
+                });
+            }
+            AppPage::Splitting => {
+                ui.heading("Texture Splitting");
+            }
+            AppPage::Sdf => {
+                ui.heading("SDF");
+            }
+        }
     });
 }
 
@@ -24,18 +72,6 @@ pub fn render_top_panel(ui: &mut egui::Ui, app: &mut TexToolApp) {
         egui::MenuBar::new().ui(ui, |ui| {
             // 文件菜单
             ui.menu_button("File", |ui| {
-                // clicked() 只会在按钮本帧被点击时返回 true。
-                if ui.button("Open").clicked() {
-                    // 这段输出只会被编译进调试版本。
-                    #[cfg(debug_assertions)]
-                    println!("Open clicked");
-                }
-
-                if ui.button("Save").clicked() {
-                    #[cfg(debug_assertions)]
-                    println!("Save clicked");
-                }
-
                 if ui.button("Exit").clicked() {
                     #[cfg(debug_assertions)]
                     println!("Exit clicked");
@@ -81,7 +117,6 @@ fn render_channel_card(ui: &mut egui::Ui, channel_name: &str, channel: &mut Chan
     ui.group(|ui| {
         // 明确让卡片内容从上到下排列，避免继承外层的 horizontal 横向布局。
         ui.vertical(|ui| {
-            // 设置卡片内容区域宽度。group 自带内边距，因此卡片外部宽度会稍大于 160。
             ui.set_width(160.0);
 
             // 显示当前输出通道的名称。
@@ -98,7 +133,6 @@ fn render_channel_card(ui: &mut egui::Ui, channel_name: &str, channel: &mut Chan
 
             // 暂时显示文件名占位文字，之后可以从 channel.path 中提取真实文件名。
             ui.label("file name");
-
 
             ui.separator();
 
