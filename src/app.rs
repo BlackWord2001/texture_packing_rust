@@ -18,9 +18,12 @@ pub struct TexToolApp {
 }
 
 impl TexToolApp {
-    // CreationContext 可以用来设置字体、主题等初始化内容，目前暂时不使用，
-    // 所以参数名以 _ 开头来避免“未使用变量”警告。
-    pub fn new(_cc: &eframe::CreationContext<'_>) -> Self {
+    pub fn new(cc: &eframe::CreationContext<'_>) -> Self {
+        cc.egui_ctx.all_styles_mut(|style|{
+            style.visuals.widgets.noninteractive.corner_radius = egui::CornerRadius::same(8);
+            style.wrap_mode = Some(egui::TextWrapMode::Truncate);
+        });
+
         // 创建包含四个默认通道的应用状态。
         Self::default()
     }

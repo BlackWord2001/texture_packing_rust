@@ -9,12 +9,12 @@ pub fn render_central_panel(ui: &mut egui::Ui, app: &mut TexToolApp) {
     egui::CentralPanel::default().show(ui, |ui| {
         match &app.current_page {
             AppPage::Packing => {
-                ui.horizontal(|ui| {
+                ui.columns(4, |cols| {
                     // &mut app.red 只把 red 字段可变借给函数，而不是转移字段所有权。
-                    render_channel_card(ui, "R", &mut app.red);
-                    render_channel_card(ui, "G", &mut app.green);
-                    render_channel_card(ui, "B", &mut app.blue);
-                    render_channel_card(ui, "A", &mut app.alpha);
+                    render_channel_card(&mut cols[0], "R", egui::Color32::from_rgb(200, 50, 50), &mut app.red);
+                    render_channel_card(&mut cols[1], "G", egui::Color32::from_rgb(50, 150, 50), &mut app.green);
+                    render_channel_card(&mut cols[2], "B", egui::Color32::from_rgb(50, 50, 200), &mut app.blue);
+                    render_channel_card(&mut cols[3], "A", egui::Color32::from_rgb(200, 200, 200), &mut app.alpha);
                 });
 
                 ui.separator();
@@ -112,61 +112,62 @@ pub fn render_top_panel(ui: &mut egui::Ui, app: &mut TexToolApp) {
     });
 }
 
-fn render_channel_card(ui: &mut egui::Ui, channel_name: &str, channel: &mut ChannelInput) {
+fn render_channel_card(
+    ui: &mut egui::Ui,
+    channel_name: &str,
+    color: egui::Color32,
+    channel: &mut ChannelInput,
+) {
     // group 为内部控件添加卡片式背景、边框和内边距。
     ui.group(|ui| {
         // 明确让卡片内容从上到下排列，避免继承外层的 horizontal 横向布局。
         ui.vertical(|ui| {
-            ui.set_width(160.0);
 
-            // 显示当前输出通道的名称。
-            ui.heading(channel_name);
+            ui.horizontal(|ui| {
+                // 显示当前输出通道的名称。
+                ui.heading(egui::RichText::new(channel_name).color(color));
+
+                ui.separator();
+
+                // 暂时显示文件名占位文字，之后可以从 channel.path 中提取真实文件名。
+                ui.label("No file");
+            });
 
             // 申请一个固定大小的预览区域。allocate_exact_size 返回区域 rect 和交互 response。
-            let preview_size = egui::vec2(160.0, 160.0);
-            let (rect, _) = ui.allocate_exact_size(preview_size, egui::Sense::hover());
+            let preview_size = ui.available_width();
+            let (rect, _) = ui.allocate_exact_size(egui::vec2(preview_size,preview_size), egui::Sense::hover());
 
             // 目前还没有加载图片，所以使用默认灰度填充预览区域。
             // from_gray 会生成 R、G、B 值相同的 Color32。
             ui.painter()
                 .rect_filled(rect, 4.0, egui::Color32::from_gray(channel.fallback));
 
-            // 暂时显示文件名占位文字，之后可以从 channel.path 中提取真实文件名。
-            ui.label("file name");
-
-            ui.separator();
-
-            // 这个闭包只让两个按钮在卡片内部横向排列。
-            ui.horizontal(|ui| {
-                // 选择文件功能尚未实现；用 let _ 接收 Response，表示暂时忽略按钮结果。
-                let _ = ui.button("select image");
-
-                if ui.button("clear").clicked() {
-                    // 清空保存的路径，恢复到“没有选择图片”的状态。
-                    channel.path.clear();
-                }
-            });
-
             // 默认灰度控件和颜色预览在同一行显示。
             ui.horizontal(|ui| {
-                ui.label("default color");
+                let color = egui::Color32::from_gray(channel.fallback);
+                let (rect, _) =
+                    ui.allocate_exact_size(egui::vec2(20.0, 20.0), egui::Sense::hover());
 
-                // &mut channel.fallback 让 DragValue 可以直接修改状态中的 u8 值。
-                ui.add(
+                ui.painter().rect_filled(rect, 2.0, color);
+
+                ui.add_sized(
+                    [ui.available_width(), 20.0],
                     egui::DragValue::new(&mut channel.fallback)
                         // 鼠标拖动和手动输入都限制在有效的 8 位灰度范围内。
                         .range(0..=255)
                         // 鼠标水平拖动一个逻辑点时，数值大约变化 1。
                         .speed(1.0),
                 );
+            });
 
-                // 根据当前灰度值计算小色块颜色，并申请 20 x 20 的绘制区域。
-                let color = egui::Color32::from_gray(channel.fallback);
-                let (rect, _) =
-                    ui.allocate_exact_size(egui::vec2(20.0, 20.0), egui::Sense::hover());
+            ui.separator();
 
-                // 在申请到的区域内绘制圆角为 2 的实心颜色方块。
-                ui.painter().rect_filled(rect, 2.0, color);
+            ui.columns(2, |cols| {
+                let _ = cols[0].button("🗁 select image");
+
+                if cols[1].button("🗑 clear").clicked() {
+                    channel.path.clear();
+                }
             });
         });
     });
